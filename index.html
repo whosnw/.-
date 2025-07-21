@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular - Ingeniería Química</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .curriculum-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .cycle-column {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            flex: 1;
+            min-width: 280px;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cycle-column h2 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        .course {
+            background-color: #e8f5e9; /* Light green for unapproved */
+            border: 1px solid #c8e6c9;
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            position: relative; /* For tooltip positioning */
+            color: #2e7d32; /* Dark green text */
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .course:hover:not(.approved):not(.blocked) {
+            background-color: #dcedc8;
+            border-color: #aed581;
+        }
+
+        .course.approved {
+            background-color: #a5d6a7; /* Deeper green for approved */
+            border-color: #66bb6a;
+            color: #1b5e20;
+            text-decoration: line-through;
+            opacity: 0.8;
+            cursor: default;
+        }
+
+        .course.blocked {
+            background-color: #ffebee; /* Light red for blocked */
+            border-color: #ef9a9a;
+            color: #c62828;
+            cursor: not-allowed;
+            opacity: 0.6;
+            filter: grayscale(10%);
+        }
+
+        .course .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position the tooltip above the text */
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+        }
+
+        .course .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .course.blocked:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .course-code {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .course-name {
+            flex-grow: 1;
+        }
+
+        .credits {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .total-credits {
+            font-weight: bold;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #cccccc;
+            text-align: right;
+            color: #2c3e50;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .curriculum-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .cycle-column {
+                width: 90%;
+                max-width: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Malla Curricular - Ingeniería Química</h1>
+
+    <div class="curriculum-container" id="curriculum"></div>
+
+    <script>
+        const coursesData = {
+            "1er ciclo": [
+                { id: "BDI01", name: "Dibujo en Ingeniería I", credits: 4, prereq: [] },
+                { id: "BFI01", name: "Física I", credits: 4, prereq: [] },
+                { id: "BMA01", name: "Cálculo Diferencial", credits: 4, prereq: [] },
+                { id: "BMA03", name: "Álgebra Lineal", credits: 4, prereq: [] },
+                { id: "BQU01", name: "Química I", credits: 4, prereq: [] },
+                { id: "BRC01", name: "Redacción y Comunicación", credits: 3, prereq: [] }
+            ],
+            "2do ciclo": [
+                { id: "BDI02", name: "Dibujo en Ingeniería II", credits: 4, prereq: ["BDI01"] },
+                { id: "BFI02", name: "Física II", credits: 4, prereq: ["BFI01"] },
+                { id: "BMA02", name: "Cálculo Integral", credits: 4, prereq: ["BMA01"] },
+                { id: "BMA04", name: "Matemática Básica", credits: 5, prereq: ["BMA03"] },
+                { id: "BQU02", name: "Química II", credits: 5, prereq: ["BQU01"] }
+            ],
+            "3er ciclo": [
+                { id: "BEF01", name: "Ética y Filosofía Política", credits: 3, prereq: [] },
+                { id: "BFI03", name: "Física III", credits: 4, prereq: ["BFI02"] },
+                { id: "BEG01", "name": "Economía General", credits: 3, prereq: [] },
+                { id: "BIC01", "name": "Introducción a la Computación", credits: 3, prereq: [] },
+                { id: "QU-216", "name": "Química Inorgánica", credits: 4, prereq: ["BQU02"] },
+                { id: "BMA05", "name": "Matemática Superior I", credits: 4, prereq: ["BMA04", "BMA02"] }
+            ],
+            "4to ciclo": [
+                { id: "BFI04", name: "Tópicos Especiales en Física", credits: 4, prereq: ["BFI03"] },
+                { id: "BMA06", name: "Matemática Superior II", credits: 4, prereq: ["BMA05"] },
+                { id: "EP-308", name: "Economía y Organización de la Empresa", credits: 3, prereq: ["BEG01"] },
+                { id: "MA-613", name: "Estadística Aplicada", credits: 4, prereq: ["BMA04"] },
+                { id: "MA-713", name: "Programación Digital", credits: 3, prereq: ["BIC01"] },
+                { id: "QU-427", name: "Fisicoquímica I", credits: 4, prereq: ["BQU02", "BFI03"] }
+            ],
+            "5to ciclo": [
+                { id: "PI-111", name: "Balance de Materia y Energía", credits: 4, prereq: ["QU-427"] },
+                { id: "PI-524", name: "Métodos Numéricos para Ingeniería Química", credits: 4, prereq: ["BMA06"] },
+                { id: "QU-328", name: "Química Orgánica I", credits: 4, prereq: ["QU-427"] },
+                { id: "QU-428", name: "Fisicoquímica II", credits: 4, prereq: ["QU-427"] },
+                { id: "QU-518", name: "Análisis Químico", credits: 5, prereq: ["QU-216"] }
+            ],
+            "6to ciclo": [
+                { id: "BRN01", name: "Realidad Nacional Constitución y Derechos Humanos", credits: 3, prereq: [] },
+                { id: "EC-618", name: "Mecánica y Resistencia de Materiales", credits: 4, prereq: ["BFI04", "BMA06"] },
+                { id: "EE-103", name: "Circuitos e Instalaciones Eléctricas", credits: 4, prereq: ["BFI03", "BMA05"] },
+                { id: "PI-140", name: "Fenómenos de Transporte", credits: 4, prereq: ["BMA06", "PI-111"] },
+                { id: "PI-216", name: "Termodinámica para Ingeniería Química I", credits: 4, prereq: ["PI-111", "QU-428"] },
+                { id: "QU-338", name: "Química Orgánica II", credits: 3, prereq: ["QU-328"] }
+            ],
+            "7mo ciclo": [
+                { id: "PA-113", name: "Ingeniería de Métodos I", credits: 3, prereq: ["MA-613"] },
+                { id: "PA-714", name: "Investigación de Operaciones I", credits: 4, prereq: ["MA-613", "MA-713"] },
+                { id: "PI-142", name: "Transferencia de Cantidad y Movimiento", credits: 4, prereq: ["PI-140"] },
+                { id: "PI-217", name: "Termodinámica para Ingeniería Química II", credits: 4, prereq: ["PI-216", "PI-524"] },
+                { id: "PI-318", name: "Industria de los Procesos Químicos", credits: 4, prereq: ["PI-140", "QU-428"] },
+                { id: "PI-514_1", name: "Ciencias de los Materiales", credits: 4, prereq: ["QU-518"] },
+                { id: "PI-514_2", name: "Recursos Químicos en la Biodiversidad", credits: 3, prereq: ["QU-338", "QU-518"] }
+            ],
+            "8vo ciclo": [
+                { id: "EP-818", name: "Costos y Presupuestos", credits: 4, prereq: ["EP-308", "PA-714"] },
+                { id: "PI-143", name: "Transferencia de Calor", credits: 4, prereq: ["PI-142"] },
+                { id: "PI-144", name: "Transferencia de Masa", credits: 4, prereq: ["PI-142"] },
+                { id: "PI-146", name: "Operaciones en Ingeniería Química I", credits: 3, prereq: ["PI-142"] },
+                { id: "PI-365", name: "Polímeros I", credits: 2, prereq: ["QU-338", "PI-318"] },
+                { id: "PI-521", name: "Introducción a la Bioingeniería", credits: 2, prereq: ["PI-520"] } // Assuming PI-520 is a valid ID for 'Ciencias de los Materiales' (PI-514_1)
+            ],
+            "9no ciclo": [
+                { id: "PI-135", name: "Laboratorio de Operaciones Unitarias I", credits: 3, prereq: ["PI-143", "PI-146"] },
+                { id: "PI-225", name: "Cinética Química y Diseño de Reactores I", credits: 4, prereq: ["PI-217"] },
+                { id: "PI-415", name: "Instrumentos de Control", credits: 4, prereq: ["EE-103", "PI-144"] },
+                { id: "PI-510", name: "Economía de los Procesos", credits: 3, prereq: ["EP-818", "PI-144"] },
+                { id: "PI-555", name: "Seguridad en Procesos Químicos Industriales", credits: 3, prereq: ["PI-143", "PI-144"] },
+                { id: "PI-911", name: "Gestión Tecnológica y Empresarial", credits: 3, prereq: ["173_credits"] },
+                { id: "QT-614", name: "Seminario de Tesis I", credits: 3, prereq: ["173_credits"] }
+            ],
+            "10mo ciclo": [
+                { id: "PA-136", name: "Planeamiento y Control de la Producción", credits: 3, prereq: ["PA-113", "PA-714"] },
+                { id: "PI-136", name: "Laboratorio de Operaciones Unitarias II", credits: 3, prereq: ["PI-135", "PI-144"] },
+                { id: "PI-426", name: "Simulación y Control de Procesos", credits: 4, prereq: ["PI-225", "PI-415"] },
+                { id: "PI525", name: "Diseño de Plantas", credits: 3, prereq: ["PI-510", "PI-415"] },
+                { id: "QT-615", name: "Seminario de Tesis II", credits: 3, prereq: ["QT-614"] }
+            ]
+        };
+
+        const curriculumDiv = document.getElementById('curriculum');
+        let approvedCourses = JSON.parse(localStorage.getItem('approvedCourses')) || {};
+
+        // Helper to get total approved credits
+        function getTotalApprovedCredits() {
+            let totalCredits = 0;
+            for (const cycleKey in coursesData) {
+                for (const course of coursesData[cycleKey]) {
+                    if (approvedCourses[course.id]) {
+                        totalCredits += course.credits;
+                    }
+                }
+            }
+            return totalCredits;
+        }
+
+        function checkPrerequisites(courseId) {
+            const course = getAllCourses()[courseId];
+            if (!course) return true; // Should not happen for valid courseIds
+
+            let missingPrereqNames = [];
+
+            for (const prereqId of course.prereq) {
+                if (prereqId === "173_credits") {
+                    if (getTotalApprovedCredits() < 173) {
+                        missingPrereqNames.push("173 créditos aprobados");
+                    }
+                } else if (!approvedCourses[prereqId]) {
+                    const prereqCourse = getAllCourses()[prereqId];
+                    if (prereqCourse) {
+                        missingPrereqNames.push(prereqCourse.name);
+                    } else {
+                        missingPrereqNames.push(`Prerrequisito desconocido: ${prereqId}`);
+                    }
+                }
+            }
+            return missingPrereqNames.length === 0 ? true : missingPrereqNames;
+        }
+
+        // Flatten all courses into a single object for easy lookup
+        function getAllCourses() {
+            const allCourses = {};
+            for (const cycleKey in coursesData) {
+                coursesData[cycleKey].forEach(course => {
+                    allCourses[course.id] = course;
+                });
+            }
+            return allCourses;
+        }
+
+        function renderCurriculum() {
+            curriculumDiv.innerHTML = ''; // Clear previous render
+            const allCourses = getAllCourses();
+
+            for (const cycleKey in coursesData) {
+                const cycleColumn = document.createElement('div');
+                cycleColumn.classList.add('cycle-column');
+
+                const cycleTitle = document.createElement('h2');
+                cycleTitle.textContent = cycleKey.replace('ciclo', 'Ciclo'); // Capitalize 'Ciclo'
+                cycleColumn.appendChild(cycleTitle);
+
+                let cycleTotalCredits = 0;
+
+                coursesData[cycleKey].forEach(course => {
+                    const courseDiv = document.createElement('div');
+                    courseDiv.classList.add('course');
+                    courseDiv.dataset.courseId = course.id;
+
+                    const isApproved = approvedCourses[course.id];
+                    const prereqsMet = checkPrerequisites(course.id);
+
+                    if (isApproved) {
+                        courseDiv.classList.add('approved');
+                    } else if (prereqsMet !== true) {
+                        courseDiv.classList.add('blocked');
+                        const tooltip = document.createElement('span');
+                        tooltip.classList.add('tooltip-text');
+                        tooltip.textContent = `Faltan: ${prereqsMet.join(', ')}`;
+                        courseDiv.appendChild(tooltip);
+                    }
+
+                    courseDiv.innerHTML += `
+                        <span class="course-code">${course.id}</span>
+                        <span class="course-name">${course.name}</span>
+                    `;
+
+                    // Add credits to the course card directly for better visibility
+                    const creditsSpan = document.createElement('span');
+                    creditsSpan.classList.add('credits');
+                    creditsSpan.textContent = `${course.credits} Crd.`;
+                    courseDiv.appendChild(creditsSpan);
+
+                    cycleColumn.appendChild(courseDiv);
+
+                    cycleTotalCredits += course.credits;
+                });
+
+                const totalCreditsDiv = document.createElement('div');
+                totalCreditsDiv.classList.add('total-credits');
+                totalCreditsDiv.textContent = `TOTAL DE CRÉDITOS: ${cycleTotalCredits}`;
+                cycleColumn.appendChild(totalCreditsDiv);
+
+
+                curriculumDiv.appendChild(cycleColumn);
+            }
+
+            attachEventListeners();
+        }
+
+        function attachEventListeners() {
+            document.querySelectorAll('.course').forEach(courseDiv => {
+                courseDiv.removeEventListener('click', toggleCourseApproved); // Prevent multiple listeners
+                courseDiv.addEventListener('click', toggleCourseApproved);
+            });
+        }
+
+        function toggleCourseApproved(event) {
+            const courseDiv = event.currentTarget;
+            const courseId = courseDiv.dataset.courseId;
+
+            // If the course is blocked, do nothing
+            if (courseDiv.classList.contains('blocked')) {
+                return;
+            }
+
+            // Toggle approval status
+            if (approvedCourses[courseId]) {
+                delete approvedCourses[courseId];
+            } else {
+                // Check prerequisites again before approving
+                const prereqsMet = checkPrerequisites(courseId);
+                if (prereqsMet === true) {
+                    approvedCourses[courseId] = true;
+                } else {
+                    // This scenario should ideally be prevented by the 'blocked' class,
+                    // but it's a good fallback.
+                    alert(`No puedes aprobar ${getAllCourses()[courseId].name} aún. Faltan los siguientes requisitos: ${prereqsMet.join(', ')}`);
+                    return;
+                }
+            }
+
+            localStorage.setItem('approvedCourses', JSON.stringify(approvedCourses));
+            renderCurriculum(); // Re-render to update states of all courses
+        }
+
+        // Initial render when the page loads
+        document.addEventListener('DOMContentLoaded', renderCurriculum);
+    </script>
+
+</body>
+</html>
